@@ -12,22 +12,43 @@ data class FeedUiState (
     val isNetworkConnected: Boolean = false
 )
 
+private val symbols = listOf(
+    "AAPL", "GOOG", "TSLA", "AMZN", "MSFT",
+    "NVDA", "META", "NFLX", "BABA", "V",
+    "JPM", "WMT", "PG", "MA", "DIS",
+    "PYPL", "INTC", "AMD", "CSCO", "ORCL",
+    "CRM", "ADBE", "QCOM", "TXN", "AVGO"
+)
+
 class FeedViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(FeedUiState())
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
 
-    init {
-        val initialStocks = listOf(
-            StockPrice("NVDA", 950.42, 940.10),
-            StockPrice("AAPL", 187.68, 189.20),
-            StockPrice("GOOG", 176.35, 174.80),
-            StockPrice("TSLA", 172.50, 175.30),
-            StockPrice("AMZN", 185.60, 183.90),
-            StockPrice("MSFT", 420.15, 418.70)
-        ).sortedByDescending { it.price }
+    private val webSocketService = PriceWebSocketService()
 
-        _uiState.update { it.copy(stocks = initialStocks) }
+    private val currentPrices = mutableMapOf<String, Double>()
+    private val previousPrices = mutableMapOf<String,Double>()
+
+    init {
+        symbols.forEach { symbol ->
+            val price = (50..500).random() + Math.random() * 100
+            currentPrices[symbol] = price
+            previousPrices[symbol] = price
+        }
+        updateStockList()
+    }
+
+    private fun updateStockList() {
+        val stocks = symbols.map { symbol ->
+            StockPrice(
+                symbol = symbol,
+                price = currentPrices[symbol] ?: 0.0,
+                previousPrice = previousPrices[symbol] ?: 0.0
+            )
+        }.sortedByDescending { it.price }
+
+        _uiState.update { it.copy(stocks = stocks) }
     }
 
 }
