@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
@@ -25,8 +26,23 @@ class PriceWebSocketService {
             .url("wss://ws.postman-echo.com/raw")
             .build()
 
-        webSocket = client.newWebSocket(request, object :
-            WebSocketListener() {
+        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    _connectionState.trySend(true)
+                }
+
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                    _messages.trySend(text)
+                }
+
+                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                    _connectionState.trySend(false)
+                }
+
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    _connectionState.trySend(false)
+                }
 
             }
         )
