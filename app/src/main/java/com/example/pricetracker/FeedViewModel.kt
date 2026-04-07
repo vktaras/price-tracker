@@ -44,10 +44,19 @@ class FeedViewModel : ViewModel() {
         }
         updateStockList()
 
-        // listen connection state
+        // listen connection state and reconnect if needed
         viewModelScope.launch {
             webSocketService.connectionState.collect { connected ->
                 _uiState.update { it.copy(isNetworkConnected = connected) }
+
+                // reconnect if connection lost while feed is active
+                if (!connected && _uiState.value.isFeedActive) {
+                    delay(3000)
+                    if (_uiState.value.isFeedActive && !_uiState.value.isNetworkConnected) {
+                        webSocketService.disconnect()
+                        webSocketService.connect()
+                    }
+                }
             }
         }
 
