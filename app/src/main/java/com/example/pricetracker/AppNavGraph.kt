@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 
 @Composable
 fun AppNavGraph() {
@@ -29,7 +30,8 @@ fun AppNavGraph() {
 
         composable(
             route = "details/{symbol}",
-            arguments = listOf(navArgument("symbol") { type = NavType.StringType })
+            arguments = listOf(navArgument("symbol") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "stocks://symbol/{symbol}" })
         ) {
             val detailsViewModel: DetailsViewModel = viewModel()
             val symbol = detailsViewModel.symbol
