@@ -76,6 +76,11 @@ fun FeedScreen(
     }
 }
 
+private val FlashGreen = Color(0x334CAF50)
+private val FlashRed = Color(0x33F44336)
+private const val FLASH_DURATION_MS = 1000L
+private const val FLASH_ANIMATION_MS = 300
+
 @Composable
 fun StockRow(stock: StockPrice, onClick: () -> Unit) {
 
@@ -84,16 +89,16 @@ fun StockRow(stock: StockPrice, onClick: () -> Unit) {
 
     LaunchedEffect(stock.price) {
         if (stock.price != stock.previousPrice) {
-            flashColor = if (stock.isUp) Color(0x334CAF50) else Color(0x33F44336)
+            flashColor = if (stock.isUp) FlashGreen else FlashRed
             isFlashing = true
-            delay(1000)
+            delay(FLASH_DURATION_MS)
             isFlashing = false
         }
     }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isFlashing) flashColor else Color.Transparent,
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = FLASH_ANIMATION_MS),
         label = "flash"
     )
 

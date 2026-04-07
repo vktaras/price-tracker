@@ -15,6 +15,11 @@ class PriceWebSocketService {
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
 
+    companion object {
+        private const val WS_URL = "wss://ws.postman-echo.com/raw"
+        private const val WS_CLOSE_CODE = 1000
+    }
+
     private val _messages = Channel<String>(Channel.BUFFERED)
     val messages: Flow<String> = _messages.receiveAsFlow()
 
@@ -23,7 +28,7 @@ class PriceWebSocketService {
 
     fun connect() {
         val request = Request.Builder()
-            .url("wss://ws.postman-echo.com/raw")
+            .url(WS_URL)
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
@@ -53,7 +58,7 @@ class PriceWebSocketService {
     }
 
     fun disconnect() {
-        webSocket?.close(1000, "User Stopped")
+        webSocket?.close(WS_CLOSE_CODE, "User Stopped")
         webSocket = null
     }
 

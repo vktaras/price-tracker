@@ -25,6 +25,13 @@ private val symbols = listOf(
     "CRM", "ADBE", "QCOM", "TXN", "AVGO"
 )
 
+private const val PRICE_UPDATE_INTERVAL_MS = 2000L
+private const val RECONNECT_DELAY_MS = 3000L
+private const val PRICE_CHANGE_RANGE = 0.05
+private const val MIN_PRICE = 1.0
+private const val INITIAL_PRICE_MIN = 50
+private const val INITIAL_PRICE_MAX = 500
+
 class FeedViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(FeedUiState())
@@ -38,7 +45,7 @@ class FeedViewModel : ViewModel() {
 
     init {
         symbols.forEach { symbol ->
-            val price = (50..500).random() + Math.random() * 100
+            val price = (INITIAL_PRICE_MIN..INITIAL_PRICE_MAX).random() + Math.random() * INITIAL_PRICE_MAX
             currentPrices[symbol] = price
             previousPrices[symbol] = price
         }
@@ -51,7 +58,7 @@ class FeedViewModel : ViewModel() {
 
                 // reconnect if connection lost while feed is active
                 if (!connected && _uiState.value.isFeedActive) {
-                    delay(3000)
+                    delay(RECONNECT_DELAY_MS)
                     if (_uiState.value.isFeedActive && !_uiState.value.isNetworkConnected) {
                         webSocketService.disconnect()
                         webSocketService.connect()
@@ -82,7 +89,7 @@ class FeedViewModel : ViewModel() {
 
         feedJob = viewModelScope.launch {
             while(true) {
-                delay(2000)
+                delay(PRICE_UPDATE_INTERVAL_MS)
                 sendPriceUpdates()
             }
         }
@@ -124,8 +131,8 @@ class FeedViewModel : ViewModel() {
     }
 
     private fun generateNewPrice(currentPrice: Double): Double {
-        val change = currentPrice * (Math.random() * 0.1 - 0.05)
-        return (currentPrice + change).coerceAtLeast(1.0)
+        val change = currentPrice * (Math.random() * PRICE_CHANGE_RANGE * 2 - PRICE_CHANGE_RANGE)
+        return (currentPrice + change).coerceAtLeast(MIN_PRICE)
     }
 
     private fun updateStockList() {
