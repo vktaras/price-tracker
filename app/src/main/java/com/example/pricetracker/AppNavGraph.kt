@@ -30,8 +30,10 @@ fun AppNavGraph() {
         composable(
             route = "details/{symbol}",
             arguments = listOf(navArgument("symbol") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val symbol = backStackEntry.arguments?.getString("symbol") ?: return@composable
+        ) {
+            val detailsViewModel: DetailsViewModel = viewModel()
+            val symbol = detailsViewModel.symbol
+
             val uiState by feedViewModel.uiState.collectAsStateWithLifecycle()
             val stock = uiState.stocks.find { it.symbol == symbol }
 
