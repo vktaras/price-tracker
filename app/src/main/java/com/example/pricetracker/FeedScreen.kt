@@ -26,7 +26,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedScreen(viewModel: FeedViewModel = viewModel()) {
+fun FeedScreen(
+    viewModel: FeedViewModel = viewModel(),
+    onStockClick: (StockPrice) -> Unit = {}
+) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -36,16 +39,16 @@ fun FeedScreen(viewModel: FeedViewModel = viewModel()) {
                 title = { Text("Price Tracker") },
                 navigationIcon = {
                     Text(
-                        text = "🟢",
+                        text = if (uiState.isNetworkConnected) "🟢" else "🔴",
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 },
                 actions = {
                     Text(
-                        text = "Stop",
+                        text = if (uiState.isFeedActive) "Stop" else "Start",
                         modifier = Modifier
                             .padding(end = 16.dp)
-                            .clickable { }
+                            .clickable { viewModel.toggleFeed() }
                     )
                 }
             )
@@ -57,7 +60,7 @@ fun FeedScreen(viewModel: FeedViewModel = viewModel()) {
                 .padding(paddingValues)
         ) {
             items(uiState.stocks) { stock ->
-                StockRow(stock = stock, onClick = { })
+                StockRow(stock = stock, onClick = { onStockClick(stock) })
                 HorizontalDivider()
             }
         }
